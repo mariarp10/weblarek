@@ -60,3 +60,16 @@ catalog.setProductsList(products);
 
 // вывод в консоль списка товаров
 console.log("Список товаров из каталога:", catalog.getAllProducts());
+
+const cart = new Cart();
+cart.addProductToCart(catalog.getAllProducts()[0]);
+console.log(cart.getCartProducts());
+console.log(cart.getProductsQuantity());
+
+const customer = new Customer();
+customer
+  .setField("address", "Some street 12")
+  .setField("email", "email@domain.com")
+  .setField("phone", "1234567890")
+  .setPaymentMethod("card");
+console.log(customer.getCustomerData());
