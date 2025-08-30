@@ -171,7 +171,7 @@ Presenter - презентер содержит основную логику п
 
 Методы класса
 - `getCartProducts(): IProduct[]` - возвращает наружу массив товаров, которые добавлены в корзину
-- `addProductToCart(toAdd: IProduct): void` - добавляет переданный товар в корзину
+- `addProductToCart(toAdd: IProduct): this` - добавляет переданный товар в корзину, возвращает наружу экземпляр класса для чейнинга вызовов
 - `deleteProductFromCart(toDelete: IProduct): void` - удаляет переданный товар из корзины, изменяет массив товаров in place
 - `clearCart(): void` -  очищает всю корзину
 - `getTotalCost(): number` - возвращает общую стоимость всех товаров в корзине

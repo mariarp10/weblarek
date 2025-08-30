@@ -7,8 +7,9 @@ export class Cart {
     return this.checkedOutProducts;
   }
 
-  addProductToCart(toAdd: IProduct): void {
+  addProductToCart(toAdd: IProduct): this {
     this.checkedOutProducts.push(toAdd);
+    return this
   }
 
   deleteProductFromCart(toDelete: IProduct): void {
