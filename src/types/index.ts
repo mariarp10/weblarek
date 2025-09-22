@@ -25,7 +25,7 @@ export interface ICustomer {
   phone: string;
 }
 
-export type TFieldName = 'address' | 'email' | 'phone';
+export type TFieldName = 'payment' | 'address' | 'email' | 'phone';
 
 export interface IGetResponse {
   total: number;

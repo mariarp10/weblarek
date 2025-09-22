@@ -20,7 +20,8 @@ import { CardPreview, ICardPreview } from "./components/views/cardPreview.ts";
 import { CartModal } from "./components/views/cartModal.ts";
 import { cartCard } from "./components/views/cartCard.ts";
 import { IProduct, TFieldName } from "./types/index.ts";
-import { OrderModal } from "./components/views/oderModal.ts";
+import { OrderForm } from "./components/views/oderForm.ts";
+import { ContactsForm } from "./components/views/contactsForm.ts";
 
 // инициализация брокера
 const events = new EventEmitter();
@@ -48,14 +49,20 @@ const cartCardTemplate =
   ensureElement<HTMLTemplateElement>('[id="card-basket"]');
 const cartTemplate = ensureElement<HTMLTemplateElement>('[id="basket"]');
 const orderTemplate = ensureElement<HTMLTemplateElement>('[id="order"]');
+const contactsTemplate = ensureElement<HTMLTemplateElement>('[id="contacts"]');
 
 // инициализация моделей представления
 const headerView = new Header(events, headerHTML);
 const catalogView = new CatalogView(catalogHTML);
-const modalWindow = new Modal(events, modalWindowHTML);
-const order = new OrderModal(events, cloneTemplate(orderTemplate));
+const modalWindow = new Modal(modalWindowHTML);
+const order = new OrderForm(events, cloneTemplate(orderTemplate));
+const contacts = new ContactsForm(events, cloneTemplate(contactsTemplate));
 
 // обработка событий
+events.on("modal:close", () => {
+  modalWindow.close();
+});
+
 // изменение количества товаров в корзине
 events.on("cart:changeQuantity", () => {
   headerView.render({ counter: cart.getProductsQuantity() });
@@ -122,56 +129,79 @@ events.on<IProduct>("cart:deleteProduct", (product) => {
   events.emit("cart:open");
 });
 
-events.on("modal:close", () => {
-  modalWindow.close();
-});
-
 events.on("cart:checkout", () => {
   modalWindow.close();
   modalWindow.render({ content: order.render() });
   modalWindow.open();
 });
 
-events.on("checkout:paymentOnline", () => {
-  customer.setPaymentMethod("card");
-  order.activeButton = "Online";
+events.on("checkout:paymentChanged", (arg: { value: "cash" | "card" }) => {
+  const { value } = arg;
+  customer.setPayment(value);
+  order.markSelectedButton(value);
 });
 
-events.on("checkout:paymentCash", () => {
-  customer.setPaymentMethod("cash");
-  order.activeButton = "Cash";
+events.on("checkout:continue", () => {
+  modalWindow.close();
+  modalWindow.render({ content: contacts.render() });
+  modalWindow.open();
 });
 
-events.on("checkout:address", (args: { fieldName: TFieldName; value: string }) => {
-  const { fieldName, value } = args;
-  customer.setField(fieldName, value);
-  if (!customer.getCustomerData().payment) {
-    events.emit("customer:validationError", ({fieldName: "payment"}));
+events.on(
+  "checkout:setField",
+  (arg: { fieldName: TFieldName; value: string }) => {
+    const { fieldName, value } = arg;
+    console.log(fieldName, value);
+    switch (fieldName) {
+      case "address": {
+        customer.setAddress(value);
+        break;
+      }
+      case "email": {
+        customer.setEmail(value);
+        break;
+      }
+      case "phone": {
+        customer.setPhone(value);
+        break;
+      }
+    }
   }
-});
+);
 
-events.on("customer:validationError", (arg: { fieldName: TFieldName | "payment"}) => {
-  const { fieldName } = arg
-  const messages = {
+events.on("customer:change", () => {
+  const { payment, address, email, phone } = customer.validateData();
+  const errorsMap = {
     payment: "Необходимо выбрать способ оплаты",
     address: "Необходимо указать адрес",
     email: "Необходимо указать имейл",
     phone: "Необходимо указать номер телефона",
   };
-  order.render({error: messages[fieldName]});
-});
-
-events.on("customer:validationSuccesses", () => {
-  order.render({error: ''})
-})
-
-events.on('customer:changedField', () => {
-  if (customer.checkOrder()) {
-    order.enableSubmit();
-  } else if (!customer.checkOrder) {
-    order.disableSubmit();
+  if (payment && address) {
+    order.isValid = true;
+    order.error = "";
   }
-})
+  if (!address) {
+    order.isValid = false;
+    order.error = errorsMap["address"];
+  }
+  if (!payment) {
+    order.isValid = false;
+    order.error = errorsMap["payment"];
+  }
+  if (email && phone) {
+    contacts.isValid = true;
+    contacts.error = "";
+  }
+  if (!email) {
+    contacts.isValid = false;
+    contacts.error = errorsMap["email"];
+  }
+  if (!phone) {
+    contacts.isValid = false;
+    contacts.error = errorsMap["phone"];
+  }
+});
 
 // получение данных с сервера
 const getRespone = await apiCommunicationLayer.getProducts();

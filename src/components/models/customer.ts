@@ -1,63 +1,58 @@
-import { ICustomer, TFieldName } from "../../types";
 import { IEvents } from "../base/Events";
+import { ICustomer } from "../../types";
 
 export class Customer {
-  protected customerData: ICustomer = {
-    payment: null,
-    address: "",
-    email: "",
-    phone: "",
-  };
+
+  protected payment: "card" | "cash" | null = null;
+  protected address: string = "";
+  protected email: string = "";
+  protected phone: string = "";
 
   constructor(protected events: IEvents) {}
 
-  setField(fieldName: TFieldName, value: string): this {
-    if (this.validateValueNotEmpty(fieldName, value.trim())) {
-      this.customerData[fieldName] = value;
-    }
-    this.events.emit('customer:changedField');
-    return this;
+  setAddress(value: string) {
+      this.address = value.trim();
+      this.events.emit("customer:change")
   }
 
-  setPaymentMethod(value: "cash" | "card" | null) {
-    if (this.validatePaymentMethod(value)) {
-      this.customerData.payment = value;
-      this.events.emit('customer:validationSuccesses');
-      return this;
-    }
+  setEmail(value: string) {
+      this.email = value;
+      this.events.emit("customer:change")
   }
 
-  protected validatePaymentMethod(value: "cash" | "card" | null) {
-    if (value === "cash" || value === "card") {
-      return true
-    } else {
-      this.events.emit('customer:validationError', ({payment: "payment"}));
-    }
+  setPhone(value: string) {
+    this.phone = value;
+    this.events.emit("customer:change")
+  }
+
+  setPayment(value: "cash" | "card") {
+    this.payment = value;
+    this.events.emit("customer:change");
   }
 
   getCustomerData(): ICustomer {
-    return this.customerData;
-  }
-
-  protected validateValueNotEmpty(fieldName: TFieldName, value: string) {
-    if (value) {
-      return !!value;
-    } else {
-      this.events.emit('customer:validationError', ({fieldName}))
-    }
-  }
-
-  clearCustomerData(): void {
-    this.customerData = {
-      payment: null,
-      address: "",
-      email: "",
-      phone: "",
+    return {
+      payment: this.payment,
+      address: this.address,
+      email: this.email,
+      phone: this.phone
     };
   }
 
-  checkOrder() {
-    const isValid = !!(this.customerData.payment && this.customerData.address);
-    return isValid
+  validateData() {
+    const result = {
+      payment: !!this.payment,
+      address: !!this.address,
+      email: !!this.email,
+      phone: !!this.phone,
+    }
+    return result
+  }
+
+  clearCustomerData(): void {
+    this.payment = null;
+    this.address = "";
+    this.email = "";
+    this.phone = ""
   }
 }
