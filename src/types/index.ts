@@ -1,4 +1,4 @@
-export type ApiPostMethods = "POST" | "PUT" | "DELETE";
+export type ApiPostMethods = 'POST' | 'PUT' | 'DELETE';
 
 export interface IApi {
   get<T extends object>(uri: string): Promise<T>;
@@ -19,11 +19,13 @@ export interface IProduct {
 }
 
 export interface ICustomer {
-  payment: "card" | "cash" | null;
+  payment: 'card' | 'cash' | null;
   address: string;
   email: string;
   phone: string;
 }
+
+export type TFieldName = 'address' | 'email' | 'phone';
 
 export interface IGetResponse {
   total: number;
@@ -39,3 +41,13 @@ export interface IPostRequestData extends ICustomer {
   total: number;
   items: string[];
 }
+
+export interface ICardActions {
+  onClick: () => void,
+}
+
+export interface IPreviewCardActions {
+  onClick: () => void
+}
+
+export type TCardButtonState = 'Available' | 'InCart' | 'Unavailable'

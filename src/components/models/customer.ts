@@ -1,4 +1,5 @@
-import { ICustomer } from "../../types";
+import { ICustomer, TFieldName } from "../../types";
+import { IEvents } from "../base/Events";
 
 export class Customer {
   protected customerData: ICustomer = {
@@ -8,35 +9,41 @@ export class Customer {
     phone: "",
   };
 
-  setField(fieldName: "address" | "email" | "phone", value: string): this {
-    if (this.validateValueNotEmpty(value.trim())) {
+  constructor(protected events: IEvents) {}
+
+  setField(fieldName: TFieldName, value: string): this {
+    if (this.validateValueNotEmpty(fieldName, value.trim())) {
       this.customerData[fieldName] = value;
     }
+    this.events.emit('customer:changedField');
     return this;
   }
 
-  setPaymentMethod(value: "cash" | "card"): this {
+  setPaymentMethod(value: "cash" | "card" | null) {
     if (this.validatePaymentMethod(value)) {
       this.customerData.payment = value;
+      this.events.emit('customer:validationSuccesses');
       return this;
-    } else {
-      throw new Error("Выберите оплату наличными или картой");
     }
   }
 
-  validatePaymentMethod(value: "cash" | "card"): boolean {
-    return value === "cash" || value === "card";
+  protected validatePaymentMethod(value: "cash" | "card" | null) {
+    if (value === "cash" || value === "card") {
+      return true
+    } else {
+      this.events.emit('customer:validationError', ({payment: "payment"}));
+    }
   }
 
   getCustomerData(): ICustomer {
     return this.customerData;
   }
 
-  validateValueNotEmpty(value: string): boolean {
+  protected validateValueNotEmpty(fieldName: TFieldName, value: string) {
     if (value) {
-      return Boolean(value);
+      return !!value;
     } else {
-      throw new Error("Поле не может быть пустым");
+      this.events.emit('customer:validationError', ({fieldName}))
     }
   }
 
@@ -47,5 +54,10 @@ export class Customer {
       email: "",
       phone: "",
     };
+  }
+
+  checkOrder() {
+    const isValid = !!(this.customerData.payment && this.customerData.address);
+    return isValid
   }
 }

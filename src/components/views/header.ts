@@ -17,7 +17,7 @@ export class Header extends Component<IHeader> {
         this.cartButton = ensureElement<HTMLButtonElement>('.header__basket', this.container);
 
         this.cartButton.addEventListener('click', () => {
-            this.events.emit('cart:open'); // generate event
+            this.events.emit('cart:open');
         })
     }
 

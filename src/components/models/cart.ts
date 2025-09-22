@@ -12,7 +12,7 @@ export class Cart {
 
   addProductToCart(toAdd: IProduct): this {
     this.checkedOutProducts.push(toAdd);
-    this.events.emit('cart:productAdded', {counter: this.getProductsQuantity()});
+    this.events.emit('cart:changeQuantity');
     return this
   }
 
@@ -22,11 +22,13 @@ export class Cart {
         (product) => product.id === toDelete.id
       );
       this.checkedOutProducts.splice(index, 1);
+      this.events.emit('cart:changeQuantity');
     }
   }
 
   clearCart(): void {
     this.checkedOutProducts.length = 0;
+    this.events.emit('cart:changeQuantity');
   }
 
   getTotalCost(): number {
