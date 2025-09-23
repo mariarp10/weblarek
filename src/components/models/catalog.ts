@@ -1,11 +1,15 @@
 import { IProduct } from "../../types";
+import { IEvents } from "../base/Events";
 
 export class Catalog {
   protected productsList: IProduct[] = [];
   protected selectedProduct: IProduct | null = null;
 
+  constructor(protected events: IEvents) {}
+
   setProductsList(apiProducts: IProduct[]): void {
     this.productsList = apiProducts;
+    this.events.emit('catalog:setProducts');
   }
 
   getAllProducts(): IProduct[] {

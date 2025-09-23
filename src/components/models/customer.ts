@@ -1,51 +1,58 @@
+import { IEvents } from "../base/Events";
 import { ICustomer } from "../../types";
 
 export class Customer {
-  protected customerData: ICustomer = {
-    payment: null,
-    address: "",
-    email: "",
-    phone: "",
-  };
 
-  setField(fieldName: "address" | "email" | "phone", value: string): this {
-    if (this.validateValueNotEmpty(value.trim())) {
-      this.customerData[fieldName] = value;
-    }
-    return this;
+  protected payment: "card" | "cash" | null = null;
+  protected address: string = "";
+  protected email: string = "";
+  protected phone: string = "";
+
+  constructor(protected events: IEvents) {}
+
+  setAddress(value: string) {
+      this.address = value.trim();
+      this.events.emit("customer:change")
   }
 
-  setPaymentMethod(value: "cash" | "card"): this {
-    if (this.validatePaymentMethod(value)) {
-      this.customerData.payment = value;
-      return this;
-    } else {
-      throw new Error("Выберите оплату наличными или картой");
-    }
+  setEmail(value: string) {
+      this.email = value.trim();
+      this.events.emit("customer:change")
   }
 
-  validatePaymentMethod(value: "cash" | "card"): boolean {
-    return value === "cash" || value === "card";
+  setPhone(value: string) {
+    this.phone = value.trim();
+    this.events.emit("customer:change")
+  }
+
+  setPayment(value: "cash" | "card") {
+    this.payment = value;
+    this.events.emit("customer:change");
   }
 
   getCustomerData(): ICustomer {
-    return this.customerData;
+    return {
+      payment: this.payment,
+      address: this.address,
+      email: this.email,
+      phone: this.phone
+    };
   }
 
-  validateValueNotEmpty(value: string): boolean {
-    if (value) {
-      return Boolean(value);
-    } else {
-      throw new Error("Поле не может быть пустым");
+  validateData() {
+    const result = {
+      payment: !!this.payment,
+      address: !!this.address,
+      email: !!this.email,
+      phone: !!this.phone,
     }
+    return result
   }
 
   clearCustomerData(): void {
-    this.customerData = {
-      payment: null,
-      address: "",
-      email: "",
-      phone: "",
-    };
+    this.payment = null;
+    this.address = "";
+    this.email = "";
+    this.phone = ""
   }
 }
