@@ -2,6 +2,7 @@ import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 
 export interface IBaseCard {
+  id: string;
   title: string;
   price: number | null;
 }
