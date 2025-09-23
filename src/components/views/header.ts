@@ -7,8 +7,8 @@ interface IHeader {
 }
 
 export class Header extends Component<IHeader> {
-  protected counterElement: HTMLElement; // поле содержит элемент, в котором на UI отображается счётчик
-  protected cartButton: HTMLButtonElement; // содержит иконку-кнопку, по нажатию открывается корзина
+  protected counterElement: HTMLElement;
+  protected cartButton: HTMLButtonElement;
 
   constructor(protected events: IEvents, container: HTMLElement) {
     super(container);

@@ -16,12 +16,12 @@ export class Customer {
   }
 
   setEmail(value: string) {
-      this.email = value;
+      this.email = value.trim();
       this.events.emit("customer:change")
   }
 
   setPhone(value: string) {
-    this.phone = value;
+    this.phone = value.trim();
     this.events.emit("customer:change")
   }
 

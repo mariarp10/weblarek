@@ -2,7 +2,6 @@ import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 
 export interface IBaseCard {
-  id: string;
   title: string;
   price: number | null;
 }
@@ -10,7 +9,6 @@ export interface IBaseCard {
 export abstract class baseCard<T extends IBaseCard> extends Component<T> {
   protected cardTitle: HTMLElement;
   protected priceField: HTMLElement;
-  protected _title: string = "";
 
   constructor(container: HTMLElement) {
     super(container);
@@ -23,7 +21,6 @@ export abstract class baseCard<T extends IBaseCard> extends Component<T> {
 
   set title(value: string) {
     this.cardTitle.textContent = value;
-    this._title = value;
   }
 
   set price(value: number | null) {

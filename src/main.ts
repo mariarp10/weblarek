@@ -16,7 +16,7 @@ import { Header } from "./components/views/header.ts";
 import { CatalogCard } from "./components/views/catalogCard.ts";
 import { CatalogView } from "./components/views/catalogView.ts";
 import { Modal } from "./components/views/modal.ts";
-import { CardPreview, ICardPreview } from "./components/views/cardPreview.ts";
+import { CardPreview } from "./components/views/cardPreview.ts";
 import { CartModal } from "./components/views/cartModal.ts";
 import { cartCard } from "./components/views/cartCard.ts";
 import { IProduct, TFieldName } from "./types/index.ts";
@@ -109,7 +109,7 @@ events.on("catalog:setProducts", () => {
   catalogView.render({ productsArray: cardsArray });
 });
 
-events.on<ICardPreview>("card:selected", (product) => {
+events.on("card:selected", (product: IProduct) => {
   modalWindow.open();
   const cardPreview = new CardPreview(
     events,
@@ -230,7 +230,7 @@ events.on("order:confirmation", async () => {
     modalWindow.render({ content: confirmation.render({ orderTotal }) });
     modalWindow.open();
   } catch (e) {
-    console.log("Ошибка при отправке данных на сервер");
+    console.log("Ошибка при отправке данных на сервер")
   }
 });
 

@@ -44,6 +44,6 @@ export class CatalogCard extends baseCard<ICatalogCard> {
 
   set image(value: string) {
     const imageAddress = `${CDN_URL}${value}`.replace("svg", "png");
-    this.setImage(this.imageContainer, imageAddress, this._title);
+    this.setImage(this.imageContainer, imageAddress, "Изображение товара");
   }
 }
