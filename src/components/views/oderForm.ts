@@ -19,7 +19,10 @@ export class OrderForm extends Form<IForm> {
       this.container
     );
 
-    this.continueButton = ensureElement<HTMLButtonElement>('.button.order__button', this.container);
+    this.continueButton = ensureElement<HTMLButtonElement>(
+      ".button.order__button",
+      this.container
+    );
 
     this.paymentCard.addEventListener("click", (e: Event) => {
       const target = e.target as HTMLButtonElement;
@@ -33,9 +36,10 @@ export class OrderForm extends Form<IForm> {
       this.OnClick(paymentOption);
     });
 
-    this.continueButton.addEventListener("click", () => {
-      this.events.emit("checkout:continue")
-    })
+    this.continueButton.addEventListener("click", (e: Event) => {
+      e.preventDefault();
+      this.events.emit("checkout:continue");
+    });
   }
 
   OnClick(value: "cash" | "card") {

@@ -22,13 +22,13 @@ import { cartCard } from "./components/views/cartCard.ts";
 import { IProduct, TFieldName } from "./types/index.ts";
 import { OrderForm } from "./components/views/oderForm.ts";
 import { ContactsForm } from "./components/views/contactsForm.ts";
+import { ConfirmationModal } from "./components/views/confirmationModal.ts";
 
 // инициализация брокера
 const events = new EventEmitter();
-// @TODO: в моделях данных в конструктор добавить поле protected events: IEvenets, методы, которые изменяют данные также должны эммитить новое событие через this.events.emit('someEventName')
 
 // инициализация моделей данных
-const apiCommunicationLayer = new ApiCommunication(events, new Api(API_URL));
+const apiCommunicationLayer = new ApiCommunication(new Api(API_URL));
 const cart = new Cart(events);
 const catalogDataModel = new Catalog(events);
 const customer = new Customer(events);
@@ -50,6 +50,8 @@ const cartCardTemplate =
 const cartTemplate = ensureElement<HTMLTemplateElement>('[id="basket"]');
 const orderTemplate = ensureElement<HTMLTemplateElement>('[id="order"]');
 const contactsTemplate = ensureElement<HTMLTemplateElement>('[id="contacts"]');
+const orderConfirmationTemplate =
+  ensureElement<HTMLTemplateElement>('[id="success"]');
 
 // инициализация моделей представления
 const headerView = new Header(events, headerHTML);
@@ -57,6 +59,28 @@ const catalogView = new CatalogView(catalogHTML);
 const modalWindow = new Modal(modalWindowHTML);
 const order = new OrderForm(events, cloneTemplate(orderTemplate));
 const contacts = new ContactsForm(events, cloneTemplate(contactsTemplate));
+const confirmation = new ConfirmationModal(
+  events,
+  cloneTemplate(orderConfirmationTemplate)
+);
+const cartContent = new CartModal(events, cloneTemplate(cartTemplate));
+
+// функция для обновления содержимого корзины. содержимое обновляется, когда добавляются новые товары и когда удаляются
+function renderCartContent() {
+  const productsInCart = cart.getCartProducts().map((product, index) => {
+    const cartItem = new cartCard(events, cloneTemplate(cartCardTemplate), {
+      onClick: () => events.emit("cart:deleteProduct", product),
+    });
+    return cartItem.render({
+      ...product,
+      index: index + 1,
+    });
+  });
+  return cartContent.render({
+    total: cart.getTotalCost(),
+    products: productsInCart,
+  });
+}
 
 // обработка событий
 events.on("modal:close", () => {
@@ -70,21 +94,7 @@ events.on("cart:changeQuantity", () => {
 
 events.on("cart:open", () => {
   modalWindow.open();
-  const cartContent = new CartModal(events, cloneTemplate(cartTemplate));
-  const productsInCart = cart.getCartProducts().map((product, index) => {
-    const cartItem = new cartCard(events, cloneTemplate(cartCardTemplate), {
-      onClick: () => events.emit("cart:deleteProduct", product),
-    });
-    return cartItem.render({
-      ...product,
-      index: index + 1,
-    });
-  });
-  const cartWithProducts = cartContent.render({
-    total: cart.getTotalCost(),
-    products: productsInCart,
-  });
-  modalWindow.render({ content: cartWithProducts });
+  modalWindow.render({ content: renderCartContent() });
 });
 
 // отображение карточек на UI после того, как с сервера пришли объекты с карточками
@@ -117,16 +127,17 @@ events.on<ICardPreview>("card:selected", (product) => {
   }
 });
 
-events.on<IProduct>("cart:changeProducts", (product) => {
+events.on("cart:changeProducts", (product: IProduct) => {
   if (cart.isInCart(product.id)) {
     cart.deleteProductFromCart(product);
   } else cart.addProductToCart(product);
 });
 
-events.on<IProduct>("cart:deleteProduct", (product) => {
+events.on("cart:deleteProduct", (product: IProduct) => {
   cart.deleteProductFromCart(product);
   modalWindow.close();
-  events.emit("cart:open");
+  modalWindow.render({ content: renderCartContent() });
+  modalWindow.open();
 });
 
 events.on("cart:checkout", () => {
@@ -151,7 +162,6 @@ events.on(
   "checkout:setField",
   (arg: { fieldName: TFieldName; value: string }) => {
     const { fieldName, value } = arg;
-    console.log(fieldName, value);
     switch (fieldName) {
       case "address": {
         customer.setAddress(value);
@@ -200,6 +210,27 @@ events.on("customer:change", () => {
   if (!phone) {
     contacts.isValid = false;
     contacts.error = errorsMap["phone"];
+  }
+});
+
+events.on("order:confirmation", async () => {
+  try {
+    const postRequest = await apiCommunicationLayer.postOrder({
+      ...customer.getCustomerData(),
+      total: cart.getTotalCost(),
+      items: cart.getCartProducts().map((product) => product.id),
+    });
+    const {id, total} = postRequest;
+
+    modalWindow.close();
+    cart.clearCart();
+    customer.clearCustomerData();
+
+    const orderTotal = total;
+    modalWindow.render({ content: confirmation.render({ orderTotal }) });
+    modalWindow.open();
+  } catch (e) {
+    console.log("Ошибка при отправке данных на сервер");
   }
 });
 

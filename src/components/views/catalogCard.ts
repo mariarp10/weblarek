@@ -1,8 +1,8 @@
-import { ensureElement } from '../../utils/utils';
-import { baseCard, IBaseCard } from './baseCard';
-import { categoryMap } from '../../utils/constants';
-import { ICardActions } from '../../types';
-import { CDN_URL } from '../../utils/constants';
+import { ensureElement } from "../../utils/utils";
+import { baseCard, IBaseCard } from "./baseCard";
+import { categoryMap } from "../../utils/constants";
+import { ICardActions } from "../../types";
+import { CDN_URL } from "../../utils/constants";
 
 export interface ICatalogCard extends IBaseCard {
   category: string;
@@ -19,16 +19,16 @@ export class CatalogCard extends baseCard<ICatalogCard> {
     super(container);
 
     this.categoryContainer = ensureElement<HTMLElement>(
-      '.card__category',
+      ".card__category",
       this.container
     );
     this.imageContainer = ensureElement<HTMLImageElement>(
-      '.card__image',
+      ".card__image",
       this.container
     );
 
     if (actions?.onClick) {
-      this.container.addEventListener('click', actions.onClick)
+      this.container.addEventListener("click", actions.onClick);
     }
   }
 
@@ -38,12 +38,12 @@ export class CatalogCard extends baseCard<ICatalogCard> {
       this.categoryContainer.classList.toggle(
         categoryMap[key as CategoryKey],
         key === value
-      )
+      );
     }
   }
 
   set image(value: string) {
-    const imageAddress = `${CDN_URL}${value}`.replace('svg', 'png')
+    const imageAddress = `${CDN_URL}${value}`.replace("svg", "png");
     this.setImage(this.imageContainer, imageAddress, this._title);
   }
 }

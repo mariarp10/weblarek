@@ -25,11 +25,14 @@ export abstract class Form<IForm> extends Component<IForm> {
     );
 
     this.container.addEventListener("input", (e: Event) => {
-      e.preventDefault();
       const target = e.target as HTMLInputElement;
       const fieldName = target.name as TFieldName;
       const value = target.value;
       this.OnInputChange(fieldName, value);
+    });
+
+    this.container.addEventListener("submit", (e: Event) => {
+      e.preventDefault();
     });
   }
 

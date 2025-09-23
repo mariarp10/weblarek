@@ -2,15 +2,15 @@ import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 
 export interface IBaseCard {
-  id: string,
-  title: string,
+  id: string;
+  title: string;
   price: number | null;
 }
 
 export abstract class baseCard<T extends IBaseCard> extends Component<T> {
   protected cardTitle: HTMLElement;
   protected priceField: HTMLElement;
-  protected _title: string = '';
+  protected _title: string = "";
 
   constructor(container: HTMLElement) {
     super(container);
